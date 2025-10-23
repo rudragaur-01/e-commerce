@@ -9,6 +9,7 @@ import { useState } from "react"
 import Image from 'next/image';
 import ShippingForm from "@/components/ShippingForm"
 import PaymentForm from "@/components/PaymentForm"
+import useCartStore from "@/stores/CartStore"
 
 const steps = [
     {
@@ -84,7 +85,8 @@ const CartPage = () => {
     const searchParams = useSearchParams()
     const router = useRouter()
     const activeStep = parseInt(searchParams.get("step") || '1')
-     const [shippingForm, setShippingForm] = useState<ShippingFormInputs>();
+    const [shippingForm, setShippingForm] = useState<ShippingFormInputs>();
+    const { cart, removeFromCart } = useCartStore()
     return (
         <div className="flex flex-col gap-8 items-center mt-12">
             <h1 className="text-2xl font-medium">Your Shopping Cart</h1>
@@ -119,9 +121,9 @@ const CartPage = () => {
             <div className="w-full flex-col flex lg:flex-row gap-16 ">
                 {/* STEPS */}
                 <div className=" w-full lg:w-7/12 shadow-lg border-1 border-gray-100 p-8 rounded-lg flex flex-col gap-8 ">
-                    {activeStep === 1 ? (cartItems.map(item => (
+                    {activeStep === 1 ? (cart.map(item => (
                         // SINGLE CART ITEM
-                        <div className=" flex items-center justify-between" key={item.id}>
+                        <div className=" flex items-center justify-between" key={item.id + item.selectedColor + item.selectedSize}>
 
                             {/* IMAGE AND DETAILS */}
                             <div className=" flex gap-8 ">
@@ -150,11 +152,11 @@ const CartPage = () => {
                                 </div>
                             </div>
                             {/* DELETE BUTTON */}
-                            <button className="w-8 h-8 rounded-full bg-red-100 text-red-400 flex items-center justify-center cursor-pointer hover:bg-red-200 transition-all ">
+                            <button onClick={() => removeFromCart(item)} className="w-8 h-8 rounded-full bg-red-100 text-red-400 flex items-center justify-center cursor-pointer hover:bg-red-200 transition-all ">
                                 <Trash2 className="w-3 h-3" />
                             </button>
                         </div>
-                    ))) : activeStep === 2 ?   <ShippingForm setShippingForm={setShippingForm} /> : activeStep === 3 && shippingForm ? <PaymentForm /> : <p className="text-sm text-gray-500">Please fill in the shipping form to continue</p>}
+                    ))) : activeStep === 2 ? <ShippingForm setShippingForm={setShippingForm} /> : activeStep === 3 && shippingForm ? <PaymentForm /> : <p className="text-sm text-gray-500">Please fill in the shipping form to continue</p>}
 
                 </div>
 
@@ -164,7 +166,7 @@ const CartPage = () => {
                     <div className="flex flex-col gap-4 ">
                         <div className=" flex justify-between text-sm">
                             <p className=" text-gray-500"> Subtotal</p>
-                            <p className=" font-medium">${cartItems.reduce((acc, item) =>
+                            <p className=" font-medium">${cart.reduce((acc, item) =>
                                 acc + item.price * item.quantity, 0
                             ).toFixed(2)}</p>
 
@@ -182,7 +184,7 @@ const CartPage = () => {
                         <hr className="border-gray-200" />
                         <div className=" flex justify-between">
                             <p className=" text-gray-800 font-semibold">Total</p>
-                            <p className=" font-medium">${cartItems.reduce((acc, item) =>
+                            <p className=" font-medium">${cart.reduce((acc, item) =>
                                 acc + item.price * item.quantity, 0
                             ).toFixed(2)}</p>
                         </div>
